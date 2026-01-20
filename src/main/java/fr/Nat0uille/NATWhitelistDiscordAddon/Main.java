@@ -13,11 +13,22 @@ public final class Main extends JavaPlugin {
 
     private DatabaseManager dbManager;
 
+    // Discord bot wrapper
+    private DiscordBot discordBot;
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
         saveLanguage();
         loadLang();
+
+        String token = getConfig().getString("discord-bot-token", "");
+        if (token == null || token.isBlank()) {
+            getLogger().severe("Discord bot token not found!");
+            getLogger().severe("Please set the discord-bot-token in the config.yml file!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         dbManager = new DatabaseManager();
 
@@ -45,10 +56,23 @@ public final class Main extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        // Initialize and connect the Discord bot
+        discordBot = new DiscordBot();
+        boolean botConnected = discordBot.connect(token);
+        if (!botConnected) {
+            getLogger().severe("Unable to connect to the Discord bot!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
     }
 
     @Override
     public void onDisable() {
+        if (discordBot != null) {
+            discordBot.disconnect();
+        }
+
         if (dbManager != null) {
             dbManager.disconnect();
         }
