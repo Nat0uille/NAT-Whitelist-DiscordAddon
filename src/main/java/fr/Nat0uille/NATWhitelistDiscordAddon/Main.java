@@ -11,16 +11,48 @@ public final class Main extends JavaPlugin {
 
     private FileConfiguration langConfig;
 
+    private DatabaseManager dbManager;
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
         saveLanguage();
         loadLang();
+
+        dbManager = new DatabaseManager();
+
+        String type = getConfig().getString("database.type");
+        String host = getConfig().getString("database.host");
+        int port = getConfig().getInt("database.port");
+        String dbName = getConfig().getString("database.database");
+        String username = getConfig().getString("database.username");
+        String password = getConfig().getString("database.password");
+
+        boolean connected;
+        if ("MySQL".equalsIgnoreCase(type)) {
+            connected = dbManager.connectMySQL(host, port, dbName, username, password);
+        } else if ("MariaDB".equalsIgnoreCase(type)) {
+            connected = dbManager.connectMariaDB(host, port, dbName, username, password);
+        }
+        else {
+            getLogger().severe("Invalid database type!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        if (!connected) {
+            getLogger().severe("Unable to connect to the database!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        if (dbManager != null) {
+            dbManager.disconnect();
+        }
+        getServer().getServicesManager().unregister(this);
     }
 
     public void loadLang() {
