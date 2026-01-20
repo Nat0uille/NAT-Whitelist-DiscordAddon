@@ -1,23 +1,27 @@
 package fr.Nat0uille.NATWhitelistDiscordAddon;
 
+import fr.Nat0uille.NATWhitelistDiscordAddon.Discord.SlashCommandListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
-/**
- * Simple wrapper around JDA to manage bot lifecycle (connect / disconnect).
- */
+
 public class DiscordBot {
     private JDA jda;
 
-    /**
-     * Connects the bot using the provided token. Blocks until ready.
-     * @param token Discord bot token
-     * @return true if connected successfully, false otherwise
-     */
+
     public boolean connect(String token) {
         try {
-            jda = JDABuilder.createDefault(token).build();
+            jda = JDABuilder.createDefault(token)
+                    .addEventListeners(new SlashCommandListener())
+                    .build();
             jda.awaitReady();
+
+            // Enregistrer la commande slash /test
+            jda.updateCommands().addCommands(
+                    Commands.slash("test", "Commande de test")
+            ).queue();
+
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -25,9 +29,6 @@ public class DiscordBot {
         }
     }
 
-    /**
-     * Gracefully shuts down the bot if running.
-     */
     public void disconnect() {
         if (jda != null) {
             try {
@@ -38,7 +39,4 @@ public class DiscordBot {
         }
     }
 
-    public JDA getJda() {
-        return jda;
-    }
 }

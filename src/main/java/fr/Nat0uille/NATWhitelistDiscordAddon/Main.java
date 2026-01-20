@@ -19,7 +19,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        saveLanguage();
+        saveAllLangResources();
         loadLang();
 
         String token = getConfig().getString("discord-bot-token", "");
@@ -88,28 +88,32 @@ public final class Main extends JavaPlugin {
         langConfig = YamlConfiguration.loadConfiguration(langFile);
     }
 
+
+
     public String getLangMessage(String key) {
         String message = langConfig.getString(key);
         if (message == null) {
-            String lang = getConfig().getString("languages", "en-us");
+            String lang = getConfig().getString("lang", "en-us");
             String notFound = notFoundMessages.getOrDefault(lang, notFoundMessages.get("en-us"));
             return notFound.replace("{key}", key);
         }
         return message;
     }
 
+    private void saveAllLangResources() {
+        String[] langs = {"en-us.yml", "fr-fr.yml"};
+            File langDir = new File(getDataFolder(), "languages");
+        if (!langDir.exists()) langDir.mkdirs();
+        for (String langFile : langs) {
+            File outFile = new File(langDir, langFile);
+            if (!outFile.exists()) {
+                saveResource("languages/" + langFile, false);
+            }
+        }
+    }
+
     private final Map<String, String> notFoundMessages = Map.of(
             "en-us", "Message not found, please check {key} in your language file! (en-us.yml)",
             "fr-fr", "Message introuvable, vérifiez {key} dans votre fichier de langue ! (fr-fr.yml)"
     );
-
-    private boolean saveLanguage() {
-        try {
-            langConfig.save(new File(getDataFolder(), "languages/" + getConfig().getString("lang") + ".yml"));
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 }
