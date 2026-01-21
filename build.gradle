@@ -64,10 +64,6 @@ shadowJar {
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
 
-    // Relocate des dépendances pour éviter les conflits
-    relocate 'com.mysql', 'fr.nat0uille.libs.mysql'
-    relocate 'org.mariadb', 'fr.nat0uille.libs.mariadb'
-    relocate 'com.zaxxer.hikari', 'fr.nat0uille.libs.hikari'
     relocate 'net.dv8tion.jda', 'fr.nat0uille.libs.jda'
 }
 

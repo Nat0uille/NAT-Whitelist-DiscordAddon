@@ -14,13 +14,11 @@ config-version: 1.0
 # Language of the plugin (en-us / fr-fr)
 lang: en-us
 
-database:
-  # Type: MySQL / MariaDB
-  type: "MySQL"
-  host: "localhost"
-  port: 3306
-  database: "nat_whitelist"
-  username: ""
-  password: ""
-
 discord-bot-token: ""
+
+discord:
+  # Require a specific role to use the /link command
+  role-required: false
+  # Discord role ID (only used if role-required is true)
+  role-id: ""
+

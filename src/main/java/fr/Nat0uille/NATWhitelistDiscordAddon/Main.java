@@ -1,7 +1,9 @@
 package fr.Nat0uille.NATWhitelistDiscordAddon;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -32,12 +34,12 @@ public final class Main extends JavaPlugin {
 
         dbManager = new DatabaseManager();
 
-        String type = getConfig().getString("database.type");
-        String host = getConfig().getString("database.host");
-        int port = getConfig().getInt("database.port");
-        String dbName = getConfig().getString("database.database");
-        String username = getConfig().getString("database.username");
-        String password = getConfig().getString("database.password");
+        String type = CoreConfigUtil.getCoreConfigString("database.type");
+        String host = CoreConfigUtil.getCoreConfigString("database.host");
+        int port = CoreConfigUtil.getCoreConfigInt("database.port");
+        String dbName = CoreConfigUtil.getCoreConfigString("database.database");
+        String username = CoreConfigUtil.getCoreConfigString("database.username");
+        String password = CoreConfigUtil.getCoreConfigString("database.password");
 
         boolean connected;
         if ("MySQL".equalsIgnoreCase(type)) {
@@ -47,6 +49,7 @@ public final class Main extends JavaPlugin {
         }
         else {
             getLogger().severe("Invalid database type!");
+            getLogger().severe(type);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -57,8 +60,10 @@ public final class Main extends JavaPlugin {
             return;
         }
 
+        dbManager.execute("CREATE TABLE IF NOT EXISTS nat_whitelist_discordaddon (id_discord BIGINT PRIMARY KEY,minecraft_name VARCHAR(255) NOT NULL,minecraft_uuid VARCHAR(255) NOT NULL) CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; ");
+
         // Initialize and connect the Discord bot
-        discordBot = new DiscordBot();
+        discordBot = new DiscordBot(dbManager, this);
         boolean botConnected = discordBot.connect(token);
         if (!botConnected) {
             getLogger().severe("Unable to connect to the Discord bot!");
@@ -116,4 +121,31 @@ public final class Main extends JavaPlugin {
             "en-us", "Message not found, please check {key} in your language file! (en-us.yml)",
             "fr-fr", "Message introuvable, vérifiez {key} dans votre fichier de langue ! (fr-fr.yml)"
     );
+
+    public class CoreConfigUtil {
+
+        public static String getCoreConfigString(String path) {
+            Plugin corePlugin = Bukkit.getPluginManager().getPlugin("NAT-Whitelist");
+            if (corePlugin != null) {
+                return corePlugin.getConfig().getString(path);
+            }
+            return null;
+        }
+
+        public static int getCoreConfigInt(String path) {
+            Plugin corePlugin = Bukkit.getPluginManager().getPlugin("NAT-Whitelist");
+            if (corePlugin != null) {
+                return corePlugin.getConfig().getInt(path);
+            }
+            return 0;
+        }
+
+        public static boolean getCoreConfigBoolean(String path) {
+            Plugin corePlugin = Bukkit.getPluginManager().getPlugin("NAT-Whitelist");
+            if (corePlugin != null) {
+                return corePlugin.getConfig().getBoolean(path);
+            }
+            return false;
+        }
+    }
 }
