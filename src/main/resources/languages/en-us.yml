@@ -13,3 +13,21 @@
 # welcome: "Welcome to the server!"
 # farewell: "Goodbye!"
 
+command.test.success: "✅ Test command is working!"
+
+error.title: "⚠️ Error"
+error.guild-only: "This command must be executed in a Discord server."
+error.role.missing: "You must have the role {role} to use this command."
+
+link.already.linked.title: "⚠️ Already linked"
+link.already.linked.description: "You already linked Minecraft username `{minecraft}` to your Discord account.\nContact an admin to modify."
+
+error.provide-minecraft: "Please provide a Minecraft username."
+error.minecraft-already-used: "The Minecraft username `{minecraft}` is already linked to a Discord account."
+error.minecraft-not-found: "Error retrieving the Minecraft username: The username does not exist."
+
+link.success.title: "✅ Success"
+link.success.description: "Registration complete!\n**Discord Name**: {discordName}\n**Discord ID**: `{discordId}`\n**Minecraft Username**: `{minecraft}`\n**Minecraft UUID**: `{uuid}`
+
+error.save-failed.title: "❌ Error"
+error.save-failed.description: "An error occurred while saving."

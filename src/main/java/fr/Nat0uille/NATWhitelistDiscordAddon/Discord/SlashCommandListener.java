@@ -28,7 +28,8 @@ public class SlashCommandListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("test")) {
-            event.reply("✅ La commande test fonctionne !").setEphemeral(true).queue();
+            // Utilise le message de langue pour la commande test
+            event.reply(plugin.getLangMessage("command.test.success")).setEphemeral(true).queue();
         }
 
         if (event.getName().equals("link")) {
@@ -40,8 +41,8 @@ public class SlashCommandListener extends ListenerAdapter {
         
         if (event.getGuild() == null || event.getMember() == null) {
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("⚠️ Erreur")
-                    .setDescription("Cette commande doit être exécutée dans un serveur Discord.")
+                    .setTitle(plugin.getLangMessage("error.title"))
+                    .setDescription(plugin.getLangMessage("error.guild-only"))
                     .setColor(Color.RED);
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();
             return;
@@ -53,9 +54,10 @@ public class SlashCommandListener extends ListenerAdapter {
             if (!roleIdStr.isEmpty()) {
                 Role role = event.getGuild().getRoleById(roleIdStr);
                 if (role != null && !event.getMember().getRoles().contains(role)) {
+                    String desc = plugin.getLangMessage("error.role.missing").replace("{role}", role.getAsMention());
                     EmbedBuilder embed = new EmbedBuilder()
-                            .setTitle("⚠️ Erreur")
-                            .setDescription("Tu dois avoir le rôle " + role.getAsMention() + " pour utiliser cette commande.")
+                            .setTitle(plugin.getLangMessage("error.title"))
+                            .setDescription(desc)
                             .setColor(Color.RED);
                     event.replyEmbeds(embed.build()).setEphemeral(true).queue();
                     return;
@@ -75,10 +77,10 @@ public class SlashCommandListener extends ListenerAdapter {
 
             if (rs.next() && rs.getString("minecraft_name") != null) {
                 String existingName = rs.getString("minecraft_name");
+                String desc = plugin.getLangMessage("link.already.linked.description").replace("{minecraft}", existingName);
                 EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("⚠️ Déjà lié")
-                        .setDescription("Tu as déjà lié ton pseudo Minecraft `" + existingName +
-                                "` à ton compte Discord.\nContacte un admin pour modifier.")
+                        .setTitle(plugin.getLangMessage("link.already.linked.title"))
+                        .setDescription(desc)
                         .setColor(Color.ORANGE);
                 event.replyEmbeds(embed.build()).setEphemeral(false).queue();
                 return;
@@ -88,8 +90,8 @@ public class SlashCommandListener extends ListenerAdapter {
             OptionMapping pseudoOption = event.getOption("pseudo_minecraft");
             if (pseudoOption == null) {
                 EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("⚠️ Erreur")
-                        .setDescription("Veuillez fournir un pseudo Minecraft.")
+                        .setTitle(plugin.getLangMessage("error.title"))
+                        .setDescription(plugin.getLangMessage("error.provide-minecraft"))
                         .setColor(Color.RED);
                 event.replyEmbeds(embed.build()).setEphemeral(true).queue();
                 return;
@@ -105,10 +107,10 @@ public class SlashCommandListener extends ListenerAdapter {
             ResultSet pseudoRs = checkPseudoStmt.executeQuery();
 
             if (pseudoRs.next()) {
+                String desc = plugin.getLangMessage("error.minecraft-already-used").replace("{minecraft}", pseudoMinecraft);
                 EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("⚠️ Erreur")
-                        .setDescription("Le pseudo Minecraft `" + pseudoMinecraft +
-                                "` est déjà lié à un compte Discord.")
+                        .setTitle(plugin.getLangMessage("error.title"))
+                        .setDescription(desc)
                         .setColor(Color.ORANGE);
                 event.replyEmbeds(embed.build()).setEphemeral(true).queue();
                 return;
@@ -118,8 +120,8 @@ public class SlashCommandListener extends ListenerAdapter {
             UUID minecraftUuid = MojangAPIManager.getUUIDFromUsername(pseudoMinecraft);
             if (minecraftUuid == null) {
                 EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("⚠️ Erreur")
-                        .setDescription("Erreur lors de la récupération du pseudo Minecraft : Ton pseudo n'existe pas")
+                        .setTitle(plugin.getLangMessage("error.title"))
+                        .setDescription(plugin.getLangMessage("error.minecraft-not-found"))
                         .setColor(Color.RED);
                 event.replyEmbeds(embed.build()).setEphemeral(false).queue();
                 return;
@@ -145,13 +147,14 @@ public class SlashCommandListener extends ListenerAdapter {
 
             // Réponse avec embed de succès
             String avatarUrl = "https://crafatar.com/avatars/" + minecraftUuid.toString().replace("-", "");
+            String desc = plugin.getLangMessage("link.success.description")
+                    .replace("{discordName}", event.getUser().getName())
+                    .replace("{discordId}", discordId)
+                    .replace("{minecraft}", correctUsername)
+                    .replace("{uuid}", minecraftUuid.toString());
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("✅ Succès")
-                    .setDescription("Enregistrement effectué !\n" +
-                            "**Pseudo Discord**: " + event.getUser().getName() + "\n" +
-                            "**ID Discord**: `" + discordId + "`\n" +
-                            "**Pseudo Minecraft**: `" + correctUsername + "`\n" +
-                            "**UUID Minecraft**: `" + minecraftUuid + "`")
+                    .setTitle(plugin.getLangMessage("link.success.title"))
+                    .setDescription(desc)
                     .setColor(Color.GREEN)
                     .setThumbnail(avatarUrl);
             event.replyEmbeds(embed.build()).setEphemeral(false).queue();
@@ -159,8 +162,8 @@ public class SlashCommandListener extends ListenerAdapter {
         } catch (Exception e) {
             e.printStackTrace();
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("❌ Erreur")
-                    .setDescription("Une erreur est survenue lors de l'enregistrement.")
+                    .setTitle(plugin.getLangMessage("error.save-failed.title"))
+                    .setDescription(plugin.getLangMessage("error.save-failed.description"))
                     .setColor(Color.RED);
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();
         }

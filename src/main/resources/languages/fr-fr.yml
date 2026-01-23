@@ -12,3 +12,22 @@
 # Exemple:
 # welcome: "Bienvenue sur le serveur !"
 # farewell: "Au revoir !"
+
+command.test.success: "✅ La commande test fonctionne !"
+
+error.title: "⚠️ Erreur"
+error.guild-only: "Cette commande doit être exécutée dans un serveur Discord."
+error.role.missing: "Tu dois avoir le rôle {role} pour utiliser cette commande."
+
+link.already.linked.title: "⚠️ Déjà lié"
+link.already.linked.description: "Tu as déjà lié ton pseudo Minecraft `{minecraft}` à ton compte Discord.\nContacte un admin pour modifier."
+
+error.provide-minecraft: "Veuillez fournir un pseudo Minecraft."
+error.minecraft-already-used: "Le pseudo Minecraft `{minecraft}` est déjà lié à un compte Discord."
+error.minecraft-not-found: "Erreur lors de la récupération du pseudo Minecraft : Ton pseudo n'existe pas"
+
+link.success.title: "✅ Succès"
+link.success.description: "Enregistrement effectué !\n**Pseudo Discord**: {discordName}\n**ID Discord**: `{discordId}`\n**Pseudo Minecraft**: `{minecraft}`\n**UUID Minecraft**: `{uuid}`
+
+error.save-failed.title: "❌ Erreur"
+error.save-failed.description: "Une erreur est survenue lors de l'enregistrement."
