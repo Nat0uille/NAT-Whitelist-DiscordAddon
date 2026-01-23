@@ -2,5 +2,6 @@ name: NAT-Whitelist-DiscordAddon
 version: '1.0-SNAPSHOT'
 main: fr.Nat0uille.NATWhitelistDiscordAddon.Main
 api-version: '1.21'
+load: STARTUP
 depend:
   - NAT-Whitelist

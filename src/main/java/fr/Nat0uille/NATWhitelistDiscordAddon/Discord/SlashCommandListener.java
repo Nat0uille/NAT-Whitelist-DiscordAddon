@@ -47,7 +47,7 @@ public class SlashCommandListener extends ListenerAdapter {
     }
 
     private void handleLinkCommand(SlashCommandInteractionEvent event) {
-        
+
         if (event.getGuild() == null || event.getMember() == null) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(plugin.getLangMessage("error.title"))
@@ -56,7 +56,7 @@ public class SlashCommandListener extends ListenerAdapter {
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();
             return;
         }
-        
+
         boolean roleRequired = plugin.getConfig().getBoolean("role-required", false);
         if (roleRequired) {
             String roleIdStr = plugin.getConfig().getString("role-id", "");
@@ -94,7 +94,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-            OptionMapping pseudoOption = event.getOption("pseudo_minecraft");
+            OptionMapping pseudoOption = event.getOption("minecraft_username");
             if (pseudoOption == null) {
                 EmbedBuilder embed = new EmbedBuilder()
                         .setTitle(plugin.getLangMessage("error.title"))
@@ -167,7 +167,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 throw new Exception("Database operation failed");
             }
 
-            String avatarUrl = "https://crafatar.com/avatars/" + minecraftUuid.toString().replace("-", "");
+            String avatarUrl = "https://vzge.me/bust/256/" + minecraftUuid.toString().replace("-", "");
             String desc = plugin.getLangMessage("link.success.description")
                     .replace("{discordName}", event.getUser().getName())
                     .replace("{discordId}", discordId)

@@ -1,6 +1,7 @@
 package fr.Nat0uille.NATWhitelistDiscordAddon;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -25,6 +26,13 @@ public final class Main extends JavaPlugin {
         loadLang();
 
         new Metrics(this, 29014);
+
+        ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+        console.sendMessage("");
+        console.sendMessage("          §c___   "+ getDescription().getName());
+        console.sendMessage("§c|\\ |  /\\   |    §4Made by §cNat0uille");
+        console.sendMessage("§c| \\| /~~\\  |    §4Version §c" + getDescription().getVersion());
+        console.sendMessage("");
 
         String token = getConfig().getString("discord-bot-token", "");
         if (token == null || token.isBlank()) {
