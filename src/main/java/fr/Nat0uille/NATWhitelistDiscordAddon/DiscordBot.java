@@ -3,6 +3,7 @@ package fr.Nat0uille.NATWhitelistDiscordAddon;
 import fr.Nat0uille.NATWhitelistDiscordAddon.Discord.SlashCommandListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
@@ -23,6 +24,8 @@ public class DiscordBot {
                     .addEventListeners(new SlashCommandListener(dbManager, plugin))
                     .build();
             jda.awaitReady();
+
+            jda.getPresence().setActivity(Activity.playing(plugin.getConfig().getString("status")));
 
             jda.updateCommands().addCommands(
                     Commands.slash("link", plugin.getLangMessage("command.link.description"))

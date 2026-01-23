@@ -57,9 +57,9 @@ public class SlashCommandListener extends ListenerAdapter {
             return;
         }
         
-        boolean roleRequired = plugin.getConfig().getBoolean("discord.role-required", false);
+        boolean roleRequired = plugin.getConfig().getBoolean("role-required", false);
         if (roleRequired) {
-            String roleIdStr = plugin.getConfig().getString("discord.role-id", "");
+            String roleIdStr = plugin.getConfig().getString("role-id", "");
             if (!roleIdStr.isEmpty()) {
                 Role role = event.getGuild().getRoleById(roleIdStr);
                 if (role != null && !event.getMember().getRoles().contains(role)) {

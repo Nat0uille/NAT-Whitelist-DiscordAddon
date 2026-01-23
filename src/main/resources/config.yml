@@ -10,15 +10,13 @@
 
 # Version of the config file.
 config-version: 1.0
-
 # Language of the plugin (en-us / fr-fr)
 lang: en-us
-
+# Discord bot token of your bot
 discord-bot-token: ""
-
-discord:
-  # Require a specific role to use the /link command
-  role-required: false
-  # Discord role ID (only used if role-required is true)
-  role-id: ""
-
+# Require a specific role to use the /link command
+role-required: false
+# Discord role ID (only used if role-required is true)
+role-id: ""
+# Discord bot status
+status: "Using NAT-Whitelist DiscordAddon !"

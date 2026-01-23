@@ -24,6 +24,8 @@ public final class Main extends JavaPlugin {
         saveAllLangResources();
         loadLang();
 
+        new Metrics(this, 29014);
+
         String token = getConfig().getString("discord-bot-token", "");
         if (token == null || token.isBlank()) {
             getLogger().severe("Discord bot token not found!");
