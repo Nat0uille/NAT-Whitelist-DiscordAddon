@@ -8,12 +8,12 @@
 # English Language File (en-us)                                                                       #
 #######################################################################################################
 
-# Add your custom messages here
-# Example:
-# welcome: "Welcome to the server!"
-# farewell: "Goodbye!"
 
-command.test.success: "✅ Test command is working!"
+command.link.description: "Link your Discord account to your Minecraft username"
+command.link.option.pseudo: "Your Minecraft username"
+command.admin-unlink.description: "Remove a linked user"
+command.admin-unlink.option.user: "The user to unlink"
+command.admin-add-to-whitelist.description: "Move all users to the whitelist"
 
 error.title: "⚠️ Error"
 error.guild-only: "This command must be executed in a Discord server."
@@ -27,7 +27,18 @@ error.minecraft-already-used: "The Minecraft username `{minecraft}` is already l
 error.minecraft-not-found: "Error retrieving the Minecraft username: The username does not exist."
 
 link.success.title: "✅ Success"
-link.success.description: "Registration complete!\n**Discord Name**: {discordName}\n**Discord ID**: `{discordId}`\n**Minecraft Username**: `{minecraft}`\n**Minecraft UUID**: `{uuid}`
+link.success.description: "Registration complete!\n**Discord Name**: {discordName}\n**Discord ID**: `{discordId}`\n**Minecraft Username**: `{minecraft}`\n**Minecraft UUID**: `{uuid}`"
 
 error.save-failed.title: "❌ Error"
 error.save-failed.description: "An error occurred while saving."
+
+admin.unlink.success.title: "✅ Success"
+admin.unlink.success.description: "User {userName} has been removed."
+admin.unlink.error.not-found: "No Minecraft username found for user {userName}."
+admin.unlink.error.permission: "You must be an administrator to use this command."
+
+admin.add-to-whitelist.success.title: "✅ Success"
+admin.add-to-whitelist.success.description: "All users have been added to the whitelist."
+admin.add-to-whitelist.error.no-users: "No users found in the database."
+admin.add-to-whitelist.error.permission: "You must be an administrator to use this command."
+

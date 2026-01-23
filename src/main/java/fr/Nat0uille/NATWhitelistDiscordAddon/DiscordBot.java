@@ -25,9 +25,11 @@ public class DiscordBot {
             jda.awaitReady();
 
             jda.updateCommands().addCommands(
-                    Commands.slash("test", "Commande de test"),
-                    Commands.slash("link", "Relie ton compte")
-                            .addOption(OptionType.STRING, "pseudo_minecraft", "Ton pseudo Minecraft", true)
+                    Commands.slash("link", plugin.getLangMessage("command.link.description"))
+                            .addOption(OptionType.STRING, "minecraft_username", plugin.getLangMessage("command.link.option.pseudo"), true),
+                    Commands.slash("admin_unlink", plugin.getLangMessage("command.admin-unlink.description"))
+                            .addOption(OptionType.USER, "user", plugin.getLangMessage("command.admin-unlink.option.user"), true),
+                    Commands.slash("admin_add_to_whitelist", plugin.getLangMessage("command.admin-add-to-whitelist.description"))
             ).queue();
 
             return true;

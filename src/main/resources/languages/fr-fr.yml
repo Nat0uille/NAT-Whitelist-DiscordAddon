@@ -8,12 +8,12 @@
 # French Language File (fr-fr)                                                                        #
 #######################################################################################################
 
-# Ajoutez vos messages personnalisés ici
-# Exemple:
-# welcome: "Bienvenue sur le serveur !"
-# farewell: "Au revoir !"
 
-command.test.success: "✅ La commande test fonctionne !"
+command.link.description: "Relie ton compte Discord à ton pseudo Minecraft"
+command.link.option.pseudo: "Ton pseudo Minecraft"
+command.admin-unlink.description: "Supprime un utilisateur relié"
+command.admin-unlink.option.user: "L'utilisateur à délier"
+command.admin-add-to-whitelist.description: "Déplace tous les utilisateurs vers la whitelist"
 
 error.title: "⚠️ Erreur"
 error.guild-only: "Cette commande doit être exécutée dans un serveur Discord."
@@ -27,7 +27,18 @@ error.minecraft-already-used: "Le pseudo Minecraft `{minecraft}` est déjà lié
 error.minecraft-not-found: "Erreur lors de la récupération du pseudo Minecraft : Ton pseudo n'existe pas"
 
 link.success.title: "✅ Succès"
-link.success.description: "Enregistrement effectué !\n**Pseudo Discord**: {discordName}\n**ID Discord**: `{discordId}`\n**Pseudo Minecraft**: `{minecraft}`\n**UUID Minecraft**: `{uuid}`
+link.success.description: "Enregistrement effectué !\n**Pseudo Discord**: {discordName}\n**ID Discord**: `{discordId}`\n**Pseudo Minecraft**: `{minecraft}`\n**UUID Minecraft**: `{uuid}`"
 
 error.save-failed.title: "❌ Erreur"
 error.save-failed.description: "Une erreur est survenue lors de l'enregistrement."
+
+admin.unlink.success.title: "✅ Succès"
+admin.unlink.success.description: "L'utilisateur {userName} a été supprimé."
+admin.unlink.error.not-found: "Aucun pseudo Minecraft trouvé pour l'utilisateur {userName}."
+admin.unlink.error.permission: "Vous devez être administrateur pour utiliser cette commande."
+
+admin.add-to-whitelist.success.title: "✅ Succès"
+admin.add-to-whitelist.success.description: "Tous les utilisateurs ont été ajoutés à la whitelist."
+admin.add-to-whitelist.error.no-users: "Aucun utilisateur trouvé dans la base de données."
+admin.add-to-whitelist.error.permission: "Vous devez être administrateur pour utiliser cette commande."
+

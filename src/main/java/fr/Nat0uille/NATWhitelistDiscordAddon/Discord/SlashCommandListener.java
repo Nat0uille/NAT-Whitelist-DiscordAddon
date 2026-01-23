@@ -4,7 +4,9 @@ import fr.Nat0uille.NATWhitelistDiscordAddon.DatabaseManager;
 import fr.Nat0uille.NATWhitelistDiscordAddon.Main;
 import fr.Nat0uille.NATWhitelistDiscordAddon.MojangAPIManager;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -34,6 +36,14 @@ public class SlashCommandListener extends ListenerAdapter {
 
         if (event.getName().equals("link")) {
             handleLinkCommand(event);
+        }
+
+        if (event.getName().equals("admin_unlink")) {
+            handleAdminUnlinkCommand(event);
+        }
+
+        if (event.getName().equals("admin_add_to_whitelist")) {
+            handleAdminAddToWhitelistCommand(event);
         }
     }
 
@@ -180,6 +190,157 @@ public class SlashCommandListener extends ListenerAdapter {
                     .setColor(Color.GREEN)
                     .setThumbnail(avatarUrl);
             event.replyEmbeds(embed.build()).setEphemeral(false).queue();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(plugin.getLangMessage("error.save-failed.title"))
+                    .setDescription(plugin.getLangMessage("error.save-failed.description"))
+                    .setColor(Color.RED);
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+        }
+    }
+
+    private void handleAdminUnlinkCommand(SlashCommandInteractionEvent event) {
+        // Vérifier les permissions d'administrateur
+        if (event.getMember() == null || !event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(plugin.getLangMessage("error.title"))
+                    .setDescription(plugin.getLangMessage("admin.unlink.error.permission"))
+                    .setColor(Color.RED);
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+            return;
+        }
+
+        // Récupérer l'utilisateur ciblé
+        OptionMapping userOption = event.getOption("user");
+        if (userOption == null) {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(plugin.getLangMessage("error.title"))
+                    .setDescription("Veuillez spécifier un utilisateur.")
+                    .setColor(Color.RED);
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+            return;
+        }
+
+        User targetUser = userOption.getAsUser();
+        String targetUserId = targetUser.getId();
+
+        try {
+            // Vérifier si l'utilisateur existe dans la base de données
+            List<Map<String, Object>> result = dbManager.select(
+                    "nat_whitelist_discordaddon",
+                    "id_discord = ?",
+                    targetUserId
+            );
+
+            if (result.isEmpty()) {
+                String desc = plugin.getLangMessage("admin.unlink.error.not-found")
+                        .replace("{userName}", targetUser.getName());
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setTitle(plugin.getLangMessage("error.title"))
+                        .setDescription(desc)
+                        .setColor(Color.RED);
+                event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+                return;
+            }
+
+            // Supprimer l'utilisateur de la base de données
+            int deletedRows = dbManager.delete(
+                    "nat_whitelist_discordaddon",
+                    "id_discord = ?",
+                    targetUserId
+            );
+
+            if (deletedRows > 0) {
+                String desc = plugin.getLangMessage("admin.unlink.success.description")
+                        .replace("{userName}", targetUser.getName());
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setTitle(plugin.getLangMessage("admin.unlink.success.title"))
+                        .setDescription(desc)
+                        .setColor(Color.GREEN);
+                event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+            } else {
+                throw new Exception("Delete operation failed");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(plugin.getLangMessage("error.save-failed.title"))
+                    .setDescription(plugin.getLangMessage("error.save-failed.description"))
+                    .setColor(Color.RED);
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+        }
+    }
+
+    private void handleAdminAddToWhitelistCommand(SlashCommandInteractionEvent event) {
+        // Vérifier les permissions d'administrateur
+        if (event.getMember() == null || !event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(plugin.getLangMessage("error.title"))
+                    .setDescription(plugin.getLangMessage("admin.add-to-whitelist.error.permission"))
+                    .setColor(Color.RED);
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+            return;
+        }
+
+        try {
+            // Récupérer tous les utilisateurs de la table nat_whitelist_discordaddon
+            List<Map<String, Object>> results = dbManager.select(
+                    "nat_whitelist_discordaddon",
+                    null
+            );
+
+            if (results.isEmpty()) {
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setTitle(plugin.getLangMessage("error.title"))
+                        .setDescription(plugin.getLangMessage("admin.add-to-whitelist.error.no-users"))
+                        .setColor(Color.RED);
+                event.replyEmbeds(embed.build()).setEphemeral(true).queue();
+                return;
+            }
+
+            // Pour chaque utilisateur, l'ajouter à la whitelist
+            for (Map<String, Object> row : results) {
+                String minecraftName = (String) row.get("minecraft_name");
+                String minecraftUuid = (String) row.get("minecraft_uuid");
+
+                if (minecraftName == null || minecraftUuid == null) {
+                    continue;
+                }
+
+                // Vérifier si l'utilisateur existe déjà dans nat_whitelist
+                List<Map<String, Object>> existingWhitelist = dbManager.select(
+                        "nat_whitelist",
+                        "uuid = ?",
+                        minecraftUuid
+                );
+
+                if (existingWhitelist.isEmpty()) {
+                    // Insérer dans nat_whitelist
+                    Map<String, Object> whitelistData = new HashMap<>();
+                    whitelistData.put("player_name", minecraftName);
+                    whitelistData.put("uuid", minecraftUuid);
+                    dbManager.insert("nat_whitelist", whitelistData);
+                } else {
+                    // Mettre à jour nat_whitelist
+                    Map<String, Object> updateData = new HashMap<>();
+                    updateData.put("player_name", minecraftName);
+                    dbManager.update(
+                            "nat_whitelist",
+                            updateData,
+                            "uuid = ?",
+                            minecraftUuid
+                    );
+                }
+            }
+
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(plugin.getLangMessage("admin.add-to-whitelist.success.title"))
+                    .setDescription(plugin.getLangMessage("admin.add-to-whitelist.success.description"))
+                    .setColor(Color.GREEN);
+            event.replyEmbeds(embed.build()).setEphemeral(true).queue();
 
         } catch (Exception e) {
             e.printStackTrace();
