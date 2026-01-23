@@ -30,7 +30,6 @@ public class SlashCommandListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("test")) {
-            // Utilise le message de langue pour la commande test
             event.reply(plugin.getLangMessage("command.test.success")).setEphemeral(true).queue();
         }
 
@@ -78,7 +77,6 @@ public class SlashCommandListener extends ListenerAdapter {
         String discordId = event.getUser().getId();
 
         try {
-            // Vérifier si l'utilisateur est déjà lié
             List<Map<String, Object>> existingUser = dbManager.select(
                     "nat_whitelist_discordaddon",
                     "id_discord = ?",
@@ -96,7 +94,6 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-            // Récupérer le pseudo Minecraft
             OptionMapping pseudoOption = event.getOption("pseudo_minecraft");
             if (pseudoOption == null) {
                 EmbedBuilder embed = new EmbedBuilder()
@@ -109,7 +106,6 @@ public class SlashCommandListener extends ListenerAdapter {
 
             String pseudoMinecraft = pseudoOption.getAsString();
 
-            // Vérifier si le pseudo est déjà utilisé
             List<Map<String, Object>> existingPseudo = dbManager.select(
                     "nat_whitelist_discordaddon",
                     "minecraft_name = ?",
@@ -126,7 +122,6 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-            // Récupérer l'UUID depuis l'API Mojang
             UUID minecraftUuid = MojangAPIManager.getUUIDFromUsername(pseudoMinecraft);
             if (minecraftUuid == null) {
                 EmbedBuilder embed = new EmbedBuilder()
@@ -137,19 +132,16 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-            // Récupérer le pseudo correct (avec la casse)
             String correctUsername = MojangAPIManager.getCorrectUsernameFromMojang(pseudoMinecraft);
             if (correctUsername == null) {
                 correctUsername = pseudoMinecraft;
             }
 
-            // Insérer ou mettre à jour dans la base de données
             Map<String, Object> data = new HashMap<>();
             data.put("id_discord", Long.parseLong(discordId));
             data.put("minecraft_name", correctUsername);
             data.put("minecraft_uuid", minecraftUuid.toString());
 
-            // Vérifier si l'entrée existe déjà
             List<Map<String, Object>> existing = dbManager.select(
                     "nat_whitelist_discordaddon",
                     "id_discord = ?",
@@ -158,10 +150,8 @@ public class SlashCommandListener extends ListenerAdapter {
 
             boolean success;
             if (existing.isEmpty()) {
-                // Insérer nouveau
                 success = dbManager.insert("nat_whitelist_discordaddon", data);
             } else {
-                // Mettre à jour existant
                 Map<String, Object> updateData = new HashMap<>();
                 updateData.put("minecraft_name", correctUsername);
                 updateData.put("minecraft_uuid", minecraftUuid.toString());
@@ -177,7 +167,6 @@ public class SlashCommandListener extends ListenerAdapter {
                 throw new Exception("Database operation failed");
             }
 
-            // Réponse avec embed de succès
             String avatarUrl = "https://crafatar.com/avatars/" + minecraftUuid.toString().replace("-", "");
             String desc = plugin.getLangMessage("link.success.description")
                     .replace("{discordName}", event.getUser().getName())
@@ -202,7 +191,6 @@ public class SlashCommandListener extends ListenerAdapter {
     }
 
     private void handleAdminUnlinkCommand(SlashCommandInteractionEvent event) {
-        // Vérifier les permissions d'administrateur
         if (event.getMember() == null || !event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(plugin.getLangMessage("error.title"))
@@ -212,7 +200,6 @@ public class SlashCommandListener extends ListenerAdapter {
             return;
         }
 
-        // Récupérer l'utilisateur ciblé
         OptionMapping userOption = event.getOption("user");
         if (userOption == null) {
             EmbedBuilder embed = new EmbedBuilder()
@@ -227,7 +214,6 @@ public class SlashCommandListener extends ListenerAdapter {
         String targetUserId = targetUser.getId();
 
         try {
-            // Vérifier si l'utilisateur existe dans la base de données
             List<Map<String, Object>> result = dbManager.select(
                     "nat_whitelist_discordaddon",
                     "id_discord = ?",
@@ -245,7 +231,6 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-            // Supprimer l'utilisateur de la base de données
             int deletedRows = dbManager.delete(
                     "nat_whitelist_discordaddon",
                     "id_discord = ?",
@@ -275,7 +260,6 @@ public class SlashCommandListener extends ListenerAdapter {
     }
 
     private void handleAdminAddToWhitelistCommand(SlashCommandInteractionEvent event) {
-        // Vérifier les permissions d'administrateur
         if (event.getMember() == null || !event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(plugin.getLangMessage("error.title"))
@@ -286,7 +270,6 @@ public class SlashCommandListener extends ListenerAdapter {
         }
 
         try {
-            // Récupérer tous les utilisateurs de la table nat_whitelist_discordaddon
             List<Map<String, Object>> results = dbManager.select(
                     "nat_whitelist_discordaddon",
                     null
@@ -301,7 +284,6 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-            // Pour chaque utilisateur, l'ajouter à la whitelist
             for (Map<String, Object> row : results) {
                 String minecraftName = (String) row.get("minecraft_name");
                 String minecraftUuid = (String) row.get("minecraft_uuid");
@@ -310,7 +292,6 @@ public class SlashCommandListener extends ListenerAdapter {
                     continue;
                 }
 
-                // Vérifier si l'utilisateur existe déjà dans nat_whitelist
                 List<Map<String, Object>> existingWhitelist = dbManager.select(
                         "nat_whitelist",
                         "uuid = ?",
@@ -318,13 +299,11 @@ public class SlashCommandListener extends ListenerAdapter {
                 );
 
                 if (existingWhitelist.isEmpty()) {
-                    // Insérer dans nat_whitelist
                     Map<String, Object> whitelistData = new HashMap<>();
                     whitelistData.put("player_name", minecraftName);
                     whitelistData.put("uuid", minecraftUuid);
                     dbManager.insert("nat_whitelist", whitelistData);
                 } else {
-                    // Mettre à jour nat_whitelist
                     Map<String, Object> updateData = new HashMap<>();
                     updateData.put("player_name", minecraftName);
                     dbManager.update(
