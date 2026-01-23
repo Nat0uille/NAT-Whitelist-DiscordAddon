@@ -10,9 +10,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.awt.Color;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class SlashCommandListener extends ListenerAdapter {
@@ -67,16 +67,16 @@ public class SlashCommandListener extends ListenerAdapter {
 
         String discordId = event.getUser().getId();
 
-        try (Connection conn = dbManager.getConnection()) {
+        try {
             // Vérifier si l'utilisateur est déjà lié
-            PreparedStatement checkStmt = conn.prepareStatement(
-                    "SELECT minecraft_name FROM nat_whitelist_discordaddon WHERE id_discord = ?"
+            List<Map<String, Object>> existingUser = dbManager.select(
+                    "nat_whitelist_discordaddon",
+                    "id_discord = ?",
+                    discordId
             );
-            checkStmt.setString(1, discordId);
-            ResultSet rs = checkStmt.executeQuery();
 
-            if (rs.next() && rs.getString("minecraft_name") != null) {
-                String existingName = rs.getString("minecraft_name");
+            if (!existingUser.isEmpty() && existingUser.get(0).get("minecraft_name") != null) {
+                String existingName = (String) existingUser.get(0).get("minecraft_name");
                 String desc = plugin.getLangMessage("link.already.linked.description").replace("{minecraft}", existingName);
                 EmbedBuilder embed = new EmbedBuilder()
                         .setTitle(plugin.getLangMessage("link.already.linked.title"))
@@ -100,13 +100,13 @@ public class SlashCommandListener extends ListenerAdapter {
             String pseudoMinecraft = pseudoOption.getAsString();
 
             // Vérifier si le pseudo est déjà utilisé
-            PreparedStatement checkPseudoStmt = conn.prepareStatement(
-                    "SELECT minecraft_name FROM nat_whitelist_discordaddon WHERE minecraft_name = ?"
+            List<Map<String, Object>> existingPseudo = dbManager.select(
+                    "nat_whitelist_discordaddon",
+                    "minecraft_name = ?",
+                    pseudoMinecraft
             );
-            checkPseudoStmt.setString(1, pseudoMinecraft);
-            ResultSet pseudoRs = checkPseudoStmt.executeQuery();
 
-            if (pseudoRs.next()) {
+            if (!existingPseudo.isEmpty()) {
                 String desc = plugin.getLangMessage("error.minecraft-already-used").replace("{minecraft}", pseudoMinecraft);
                 EmbedBuilder embed = new EmbedBuilder()
                         .setTitle(plugin.getLangMessage("error.title"))
@@ -133,17 +133,39 @@ public class SlashCommandListener extends ListenerAdapter {
                 correctUsername = pseudoMinecraft;
             }
 
-            // Insérer dans la base de données
-            PreparedStatement insertStmt = conn.prepareStatement(
-                    "INSERT INTO nat_whitelist_discordaddon (id_discord, minecraft_name, minecraft_uuid) " +
-                            "VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE minecraft_name=?, minecraft_uuid=?"
+            // Insérer ou mettre à jour dans la base de données
+            Map<String, Object> data = new HashMap<>();
+            data.put("id_discord", Long.parseLong(discordId));
+            data.put("minecraft_name", correctUsername);
+            data.put("minecraft_uuid", minecraftUuid.toString());
+
+            // Vérifier si l'entrée existe déjà
+            List<Map<String, Object>> existing = dbManager.select(
+                    "nat_whitelist_discordaddon",
+                    "id_discord = ?",
+                    Long.parseLong(discordId)
             );
-            insertStmt.setString(1, discordId);
-            insertStmt.setString(2, correctUsername);
-            insertStmt.setString(3, minecraftUuid.toString());
-            insertStmt.setString(4, correctUsername);
-            insertStmt.setString(5, minecraftUuid.toString());
-            insertStmt.executeUpdate();
+
+            boolean success;
+            if (existing.isEmpty()) {
+                // Insérer nouveau
+                success = dbManager.insert("nat_whitelist_discordaddon", data);
+            } else {
+                // Mettre à jour existant
+                Map<String, Object> updateData = new HashMap<>();
+                updateData.put("minecraft_name", correctUsername);
+                updateData.put("minecraft_uuid", minecraftUuid.toString());
+                success = dbManager.update(
+                        "nat_whitelist_discordaddon",
+                        updateData,
+                        "id_discord = ?",
+                        Long.parseLong(discordId)
+                ) > 0;
+            }
+
+            if (!success) {
+                throw new Exception("Database operation failed");
+            }
 
             // Réponse avec embed de succès
             String avatarUrl = "https://crafatar.com/avatars/" + minecraftUuid.toString().replace("-", "");
