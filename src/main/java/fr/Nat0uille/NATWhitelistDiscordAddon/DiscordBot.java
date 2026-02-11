@@ -44,10 +44,6 @@ public class DiscordBot {
 
     public void disconnect() {
         if (jda != null) {
-            try {
-                jda.shutdown();
-            } catch (Exception ignored) {
-            }
             jda = null;
         }
     }
