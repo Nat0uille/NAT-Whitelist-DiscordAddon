@@ -25,7 +25,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:7.0.2'
 
     // Discord Bot
-    implementation("net.dv8tion:JDA:6.3.0")
+    implementation("net.dv8tion:JDA:6.3.1")
 }
 
 
